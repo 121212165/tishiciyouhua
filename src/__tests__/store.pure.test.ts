@@ -1,28 +1,8 @@
 /**
  * Zustand Store - Pure Logic Tests
- * Testing store actions without Expo dependencies
+ * Testing store actions
  */
-
-// Type definitions matching the actual store
-type PainPointStatus = 'raw' | 'refining' | 'refined' | 'archived';
-
-interface PainPoint {
-  id: string;
-  user_id: string;
-  raw_content: string;
-  tags: string[];
-  status: PainPointStatus;
-  refined_story?: string;
-  mvp_features?: string[];
-  created_at: string;
-  updated_at: string;
-}
-
-interface Profile {
-  id: string;
-  username: string;
-  created_at: string;
-}
+import type { PainPoint, Profile } from '../types';
 
 // Simple in-memory store for testing
 interface AppState {
@@ -83,7 +63,7 @@ describe('AppState Reducers', () => {
 
   describe('setProfile', () => {
     it('should set profile', () => {
-      const profile = { id: 'user-1', username: 'test', created_at: '2024-01-01' };
+      const profile: Profile = { id: 'user-1', username: 'test', created_at: '2024-01-01' };
       state = reducers.setProfile(profile);
 
       expect(state.profile).toEqual(profile);
@@ -232,5 +212,3 @@ describe('Business Logic', () => {
     });
   });
 });
-
-console.log('Store tests completed!');

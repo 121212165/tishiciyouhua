@@ -1,17 +1,9 @@
 /**
  * Clipboard Module - Pure Logic Tests
- * Testing only pure functions without Expo dependencies
+ * Testing pure functions without Expo dependencies
  */
+import type { ClipboardItem } from '../types';
 
-// Type definitions for testing
-interface ClipboardItem {
-  id: string;
-  content: string;
-  created_at: string;
-  source?: string;
-}
-
-const CLIPBOARD_HISTORY_KEY = 'clipboard_history';
 const MAX_HISTORY_ITEMS = 100;
 
 // Mock storage
@@ -77,7 +69,7 @@ describe('Clipboard Pure Functions', () => {
 
   describe('stringifySafe', () => {
     it('should stringify valid data', () => {
-      const data = [{ id: '1', content: 'test' }];
+      const data = [{ id: '1', content: 'test' } as ClipboardItem];
       const result = stringifySafe(data);
       expect(result).toContain('"content":"test"');
     });
@@ -114,13 +106,13 @@ describe('Clipboard Pure Functions', () => {
 
   describe('trimHistory', () => {
     it('should not trim if under limit', () => {
-      const items = Array.from({ length: 50 }, (_, i) => ({ id: String(i), content: `item${i}`, created_at: '' }));
+      const items: ClipboardItem[] = Array.from({ length: 50 }, (_, i) => ({ id: String(i), content: `item${i}`, created_at: '' }));
       const result = trimHistory(items);
       expect(result.length).toBe(50);
     });
 
     it('should trim if over limit', () => {
-      const items = Array.from({ length: 150 }, (_, i) => ({ id: String(i), content: `item${i}`, created_at: '' }));
+      const items: ClipboardItem[] = Array.from({ length: 150 }, (_, i) => ({ id: String(i), content: `item${i}`, created_at: '' }));
       const result = trimHistory(items);
       expect(result.length).toBe(100);
     });
@@ -128,14 +120,14 @@ describe('Clipboard Pure Functions', () => {
 
   describe('findDuplicate', () => {
     it('should return -1 when no duplicate', () => {
-      const history: ClipboardItem[] = [{ id: '1', content: 'a' }];
+      const history: ClipboardItem[] = [{ id: '1', content: 'a', created_at: '' }];
       expect(findDuplicate(history, 'b')).toBe(-1);
     });
 
     it('should return index when duplicate found', () => {
       const history: ClipboardItem[] = [
-        { id: '1', content: 'a' },
-        { id: '2', content: 'b' },
+        { id: '1', content: 'a', created_at: '' },
+        { id: '2', content: 'b', created_at: '' },
       ];
       expect(findDuplicate(history, 'b')).toBe(1);
     });
@@ -144,8 +136,8 @@ describe('Clipboard Pure Functions', () => {
   describe('removeItem', () => {
     it('should remove item by id', () => {
       const history: ClipboardItem[] = [
-        { id: '1', content: 'a' },
-        { id: '2', content: 'b' },
+        { id: '1', content: 'a', created_at: '' },
+        { id: '2', content: 'b', created_at: '' },
       ];
       const result = removeItem(history, '1');
       expect(result).toHaveLength(1);
@@ -153,7 +145,7 @@ describe('Clipboard Pure Functions', () => {
     });
 
     it('should handle non-existent id', () => {
-      const history: ClipboardItem[] = [{ id: '1', content: 'a' }];
+      const history: ClipboardItem[] = [{ id: '1', content: 'a', created_at: '' }];
       const result = removeItem(history, '999');
       expect(result).toHaveLength(1);
     });
@@ -188,5 +180,3 @@ describe('Clipboard Pure Functions', () => {
     });
   });
 });
-
-console.log('All pure function tests passed!');

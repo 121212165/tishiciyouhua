@@ -2,11 +2,11 @@ import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { PieChart, BarChart } from 'react-native-chart-kit';
 import { useStore } from '../../src/store';
+import { colors, spacing, borderRadius, fontSize } from '../../src/constants/theme';
+import { CHART_COLORS, defaultChartConfig } from '../../src/config/charts';
 
 const { width } = Dimensions.get('window');
 const CHART_WIDTH = width - 48;
-
-const COLORS = ['#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444'];
 
 export default function InsightsScreen() {
   const { painPoints } = useStore();
@@ -28,8 +28,8 @@ export default function InsightsScreen() {
     return entries.map(([tag, count], index) => ({
       name: tag,
       population: count,
-      color: COLORS[index % COLORS.length],
-      legendFontColor: '#6B7280',
+      color: CHART_COLORS[index % CHART_COLORS.length],
+      legendFontColor: colors.textTertiary,
       legendFontSize: 12,
     }));
   }, [tagDistribution]);
@@ -68,19 +68,6 @@ export default function InsightsScreen() {
     };
   }, [painPoints]);
 
-  const chartConfig = {
-    backgroundColor: '#FFFFFF',
-    backgroundGradientFrom: '#FFFFFF',
-    backgroundGradientTo: '#FFFFFF',
-    decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
-    style: { borderRadius: 16 },
-    propsForLabels: {
-      fontSize: 11,
-    },
-  };
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -113,7 +100,7 @@ export default function InsightsScreen() {
               data={pieData}
               width={CHART_WIDTH}
               height={200}
-              chartConfig={chartConfig}
+              chartConfig={defaultChartConfig}
               accessor="population"
               backgroundColor="transparent"
               paddingLeft="15"
@@ -134,7 +121,7 @@ export default function InsightsScreen() {
               height={200}
               yAxisLabel=""
               yAxisSuffix=""
-              chartConfig={chartConfig}
+              chartConfig={defaultChartConfig}
               verticalLabelRotation={0}
               labelsRotation={0}
               fromZero
@@ -158,7 +145,7 @@ export default function InsightsScreen() {
               .sort(([, a], [, b]) => b - a)
               .map(([tag, count], index) => (
                 <View key={tag} style={styles.tagItem}>
-                  <View style={[styles.tagDot, { backgroundColor: COLORS[index % COLORS.length] }]} />
+                  <View style={[styles.tagDot, { backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }]} />
                   <Text style={styles.tagName}>#{tag}</Text>
                   <Text style={styles.tagCount}>{count}</Text>
                 </View>
@@ -173,61 +160,61 @@ export default function InsightsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.backgroundAlt,
   },
   header: {
-    padding: 20,
+    padding: spacing.xl,
   },
   title: {
-    fontSize: 28,
+    fontSize: fontSize.xxl,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: fontSize.md,
+    color: colors.textTertiary,
   },
   statsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: fontSize.xl,
     fontWeight: '700',
-    color: '#6366F1',
+    color: colors.primary,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: fontSize.sm,
+    color: colors.textTertiary,
+    marginTop: spacing.xs,
   },
   chartSection: {
-    padding: 20,
-    paddingTop: 16,
+    padding: spacing.xl,
+    paddingTop: spacing.lg,
   },
   chartTitle: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
   },
   chartCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     overflow: 'hidden',
   },
   emptyChart: {
@@ -236,39 +223,39 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
+    fontSize: fontSize.base,
+    color: colors.textMuted,
   },
   tagListSection: {
-    padding: 20,
+    padding: spacing.xl,
     paddingTop: 0,
   },
   tagList: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
   },
   tagItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   tagDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   tagName: {
     flex: 1,
-    fontSize: 14,
-    color: '#374151',
+    fontSize: fontSize.base,
+    color: colors.textSecondary,
   },
   tagCount: {
-    fontSize: 14,
+    fontSize: fontSize.base,
     fontWeight: '600',
-    color: '#6366F1',
+    color: colors.primary,
   },
 });

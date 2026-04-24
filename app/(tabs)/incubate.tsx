@@ -10,15 +10,16 @@ import {
 import { LayoutGrid, Clock, CheckCircle, Layers } from 'lucide-react-native';
 import { useStore } from '../../src/store';
 import { useRouter } from 'expo-router';
+import { colors, spacing, borderRadius, fontSize } from '../../src/constants/theme';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = width * 0.75;
 
 const COLUMNS = [
-  { id: 'raw', title: '待验证', icon: Clock, color: '#F59E0B' },
-  { id: 'refined', title: '已定义', icon: CheckCircle, color: '#6366F1' },
-  { id: 'incubating', title: '开发中', icon: Layers, color: '#8B5CF6' },
-  { id: 'done', title: '已完成', icon: CheckCircle, color: '#10B981' },
+  { id: 'raw', title: '待验证', icon: Clock, color: colors.warning },
+  { id: 'refined', title: '已定义', icon: CheckCircle, color: colors.primary },
+  { id: 'incubating', title: '开发中', icon: Layers, color: colors.secondary },
+  { id: 'done', title: '已完成', icon: CheckCircle, color: colors.success },
 ];
 
 export default function IncubateScreen() {
@@ -110,43 +111,43 @@ export default function IncubateScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.backgroundAlt,
   },
   column: {
     flex: 1,
-    marginHorizontal: 8,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    marginTop: 16,
-    marginBottom: 16,
+    marginHorizontal: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
     maxHeight: '100%',
   },
   columnHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border,
   },
   columnTitle: {
-    fontSize: 14,
+    fontSize: fontSize.base,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   badge: {
     marginLeft: 'auto',
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: 12,
   },
   badgeText: {
-    fontSize: 12,
-    color: '#FFFFFF',
+    fontSize: fontSize.sm,
+    color: colors.tagTextSelected,
     fontWeight: '600',
   },
   columnContent: {
     flex: 1,
-    padding: 8,
+    padding: spacing.sm,
   },
   emptyColumn: {
     flex: 1,
@@ -155,42 +156,42 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
+    fontSize: fontSize.base,
+    color: colors.textMuted,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
+    borderColor: colors.border,
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
   cardContent: {
-    fontSize: 14,
-    color: '#374151',
-    marginBottom: 8,
+    fontSize: fontSize.base,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
   },
   cardTags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4,
-    marginBottom: 8,
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
   },
   cardTag: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 8,
+    backgroundColor: colors.backgroundAlt,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: borderRadius.sm,
   },
   cardTagText: {
-    fontSize: 10,
-    color: '#6B7280',
+    fontSize: fontSize.xs,
+    color: colors.textTertiary,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -199,11 +200,11 @@ const styles = StyleSheet.create({
   },
   cardDate: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: colors.textMuted,
   },
   cardStatus: {
     fontSize: 11,
-    color: '#6366F1',
+    color: colors.primary,
     fontWeight: '500',
   },
 });

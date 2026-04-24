@@ -13,6 +13,7 @@ import {
 import { Mic, Send, X } from 'lucide-react-native';
 import { useStore } from '../../src/store';
 import { suggestTags } from '../../src/lib/anthropic';
+import { colors, spacing, borderRadius, fontSize } from '../../src/constants/theme';
 
 export default function CaptureScreen() {
   const [content, setContent] = useState('');
@@ -93,7 +94,7 @@ export default function CaptureScreen() {
               style={[styles.MicButton, isRecording && styles.recording]}
               onPress={toggleRecording}
             >
-              <Mic size={24} color={isRecording ? '#EF4444' : '#6366F1'} />
+              <Mic size={24} color={isRecording ? colors.danger : colors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -161,139 +162,139 @@ export default function CaptureScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.surface,
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    padding: 20,
-    paddingTop: 16,
+    padding: spacing.xl,
+    paddingTop: spacing.lg,
   },
   title: {
-    fontSize: 28,
+    fontSize: fontSize.xxl,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: fontSize.md,
+    color: colors.textTertiary,
   },
   inputSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.xl,
   },
   inputContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.xl,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     overflow: 'hidden',
     position: 'relative',
   },
   input: {
-    padding: 16,
-    fontSize: 16,
-    color: '#111827',
+    padding: spacing.lg,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
     minHeight: 120,
     paddingRight: 60,
   },
   MicButton: {
     position: 'absolute',
-    right: 16,
-    bottom: 16,
+    right: spacing.lg,
+    bottom: spacing.lg,
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: colors.tagBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   recording: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: colors.micBgRecording,
   },
   tagsSection: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
   },
   tagsTitle: {
-    fontSize: 14,
+    fontSize: fontSize.base,
     fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: 8,
+    color: colors.textTertiary,
+    marginBottom: spacing.sm,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tagButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
   },
   tagSelected: {
-    backgroundColor: '#6366F1',
-    borderColor: '#6366F1',
+    backgroundColor: colors.tagBgSelected,
+    borderColor: colors.tagBgSelected,
   },
   tagText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: fontSize.base,
+    color: colors.textTertiary,
   },
   tagTextSelected: {
-    color: '#FFFFFF',
+    color: colors.tagTextSelected,
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6366F1',
-    marginHorizontal: 20,
-    marginTop: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: colors.primary,
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.xxl,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.lg,
   },
   submitText: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.tagTextSelected,
   },
   recentSection: {
-    padding: 20,
+    padding: spacing.xl,
   },
   recentTitle: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
   },
   recentCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
   },
   recentContent: {
-    fontSize: 14,
-    color: '#374151',
-    marginBottom: 8,
+    fontSize: fontSize.base,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
   },
   recentMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   recentStatus: {
-    fontSize: 12,
-    color: '#6366F1',
+    fontSize: fontSize.sm,
+    color: colors.primary,
     fontWeight: '500',
   },
   recentTime: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
   },
 });
