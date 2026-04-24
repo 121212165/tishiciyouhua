@@ -14,6 +14,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useStore } from '../../src/store';
 import { anthropic, REFINEMENT_SYSTEM_PROMPT, INITIAL_GREETING } from '../../src/lib/anthropic';
 import type { Message } from '../../src/types';
+import { colors, spacing, borderRadius, fontSize } from '../../src/constants/theme';
 
 export default function RefineScreen() {
   const router = useRouter();
@@ -225,86 +226,86 @@ export default function RefineScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.backgroundAlt,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#FFFFFF',
+    padding: spacing.md,
+    backgroundColor: colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border,
   },
   backButton: {
-    padding: 8,
+    padding: spacing.sm,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
-    color: '#111827',
-    marginLeft: 6,
+    color: colors.textPrimary,
+    marginLeft: spacing.xs + 2,
   },
   summaryCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    marginBottom: 8,
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: colors.background,
+    margin: spacing.lg,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
   },
   summaryLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 4,
+    fontSize: fontSize.sm,
+    color: colors.textTertiary,
+    marginBottom: spacing.xs,
   },
   summaryContent: {
-    fontSize: 14,
-    color: '#111827',
+    fontSize: fontSize.base,
+    color: colors.textPrimary,
   },
   messagesContainer: {
     flex: 1,
-    marginHorizontal: 16,
+    marginHorizontal: spacing.lg,
   },
   messagesContent: {
-    paddingBottom: 16,
+    paddingBottom: spacing.lg,
   },
   messageBubble: {
     maxWidth: '85%',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 8,
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.sm,
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: '#6366F1',
+    backgroundColor: colors.primary,
   },
   aiBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
   },
   messageText: {
-    fontSize: 14,
+    fontSize: fontSize.base,
     lineHeight: 20,
   },
   userText: {
-    color: '#FFFFFF',
+    color: colors.tagTextSelected,
   },
   aiText: {
-    color: '#374151',
+    color: colors.textSecondary,
   },
   inputContainer: {
-    padding: 16,
-    backgroundColor: '#FFFFFF',
+    padding: spacing.lg,
+    backgroundColor: colors.background,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: colors.border,
   },
   inputRow: {
     flexDirection: 'row',
@@ -312,37 +313,37 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.surface,
     borderRadius: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: fontSize.base,
     maxHeight: 100,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#6366F1',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: colors.textMuted,
   },
   confirmButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#10B981',
-    paddingVertical: 14,
-    borderRadius: 12,
+    backgroundColor: colors.success,
+    paddingVertical: fontSize.base + 2,
+    borderRadius: borderRadius.lg,
   },
   confirmText: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
-    color: '#FFFFFF',
-    marginLeft: 8,
+    color: colors.tagTextSelected,
+    marginLeft: spacing.sm,
   },
 });

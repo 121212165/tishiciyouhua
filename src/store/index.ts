@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import type { PainPoint, Profile, Message } from '../types';
+import type { PainPoint, Profile } from '../types';
 
 interface AppState {
   // User
@@ -18,10 +18,9 @@ interface AppState {
   updatePainPoint: (id: string, updates: Partial<PainPoint>) => Promise<void>;
   deletePainPoint: (id: string) => Promise<void>;
 
-  // Refinement
-  startRefinement: (painPointId: string) => Promise<Message[]>;
-  continueRefinement: (painPointId: string, userMessage: string) => Promise<Message>;
-  finishRefinement: (painPointId: string, refinedStory: string, mvpFeatures: string[]) => Promise<void>;
+  // Refinement stubs - reserved for Anthropic API integration
+  // startRefinement, continueRefinement will be implemented when
+  // the AI refinement flow connects to a real provider.
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -115,16 +114,7 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  startRefinement: async (painPointId) => {
-    // This will be implemented with Anthropic API in Phase 3
-    return [];
-  },
-
-  continueRefinement: async (painPointId, userMessage) => {
-    // This will be implemented with Anthropic API in Phase 3
-    return { role: 'assistant' as const, content: '' };
-  },
-
+  // Refinement flow handled in-screen via refine/[id].tsx
   finishRefinement: async (painPointId, refinedStory, mvpFeatures) => {
     await get().updatePainPoint(painPointId, {
       status: 'refined',

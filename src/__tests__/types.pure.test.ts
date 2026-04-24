@@ -1,61 +1,10 @@
 /**
  * Types Module - Pure Unit Tests
- * Testing type structures and validation without Expo dependencies
+ * Testing type structures and validation
  */
+import type { PainPoint, Message, Profile, TagSuggestion, ClipboardItem, VideoItem, Subtitle, PainPointStatus } from '../types';
 
-// Type definitions
-type PainPointStatus = 'raw' | 'refining' | 'refined' | 'archived';
-
-interface PainPoint {
-  id: string;
-  user_id: string;
-  raw_content: string;
-  tags: string[];
-  status: PainPointStatus;
-  refined_story?: string;
-  mvp_features?: string[];
-  created_at: string;
-  updated_at: string;
-}
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-interface Profile {
-  id: string;
-  username: string;
-  created_at: string;
-}
-
-interface TagSuggestion {
-  tag: string;
-  confidence: number;
-}
-
-interface ClipboardItem {
-  id: string;
-  content: string;
-  created_at: string;
-  source?: string;
-}
-
-interface VideoItem {
-  id: string;
-  uri: string;
-  title?: string;
-  subtitles?: Subtitle[];
-  created_at: string;
-}
-
-interface Subtitle {
-  start: number;
-  end: number;
-  text: string;
-}
-
-// Validation functions
+// Validation functions (pure logic, no Expo dependency)
 function isValidPainPointStatus(status: string): status is PainPointStatus {
   return ['raw', 'refining', 'refined', 'archived'].includes(status);
 }
@@ -232,5 +181,3 @@ describe('Data Construction Tests', () => {
     });
   });
 });
-
-console.log('Type tests completed!');

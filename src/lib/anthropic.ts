@@ -4,6 +4,7 @@ const anthropicApiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '';
 
 export const anthropic = new Anthropic({
   apiKey: anthropicApiKey,
+  dangerouslyAllowBrowser: true,
 });
 
 // System prompt for the refinement agent

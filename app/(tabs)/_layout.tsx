@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Edit3, LayoutGrid, BarChart2, Wrench } from 'lucide-react-native';
 import { View, Text } from 'react-native';
+import { colors } from '../../src/constants/theme';
 
 // Custom tab bar icon component
 function TabIcon({ name, color, size }: { name: string; color: string; size: number }) {
@@ -22,12 +23,12 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6366F1',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: colors.background,
           borderTopWidth: 1,
-          borderTopColor: '#E5E7EB',
+          borderTopColor: colors.border,
           paddingTop: 8,
           paddingBottom: 8,
           height: 60,
@@ -37,9 +38,9 @@ export default function TabLayout() {
           fontWeight: '500',
         },
         headerStyle: {
-          backgroundColor: '#6366F1',
+          backgroundColor: colors.primary,
         },
-        headerTintColor: '#FFFFFF',
+        headerTintColor: colors.tagTextSelected,
         headerTitleStyle: {
           fontWeight: '600',
         },

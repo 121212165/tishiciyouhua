@@ -1,16 +1,18 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import ErrorBoundary from '../src/components/ErrorBoundary';
+import { colors } from '../src/constants/theme';
 
 export default function RootLayout() {
   return (
-    <>
+    <ErrorBoundary>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#6366F1',
+            backgroundColor: colors.primary,
           },
-          headerTintColor: '#FFFFFF',
+          headerTintColor: colors.tagTextSelected,
           headerTitleStyle: {
             fontWeight: '600',
           },
@@ -25,6 +27,6 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-    </>
+    </ErrorBoundary>
   );
 }
