@@ -42,7 +42,7 @@ export async function optimizeAction(
     })
 
     if (!parsed.success) {
-      return { success: false, error: parsed.error.errors[0].message }
+      return { success: false, error: parsed.error.errors[0]?.message ?? '输入验证失败' }
     }
 
     const { prompt, model, style } = parsed.data

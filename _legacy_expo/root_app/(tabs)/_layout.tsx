@@ -1,19 +1,18 @@
 import { Tabs } from 'expo-router';
 import { Edit3, LayoutGrid, BarChart2, Wrench } from 'lucide-react-native';
-import { View, Text } from 'react-native';
 import { colors } from '../../src/constants/theme';
 
 // Custom tab bar icon component
 function TabIcon({ name, color, size }: { name: string; color: string; size: number }) {
   switch (name) {
     case 'capture':
-      return <Edit3 size={size} color={color as any} />;
+      return <Edit3 size={size} color={color} />;
     case 'incubate':
-      return <LayoutGrid size={size} color={color as any} />;
+      return <LayoutGrid size={size} color={color} />;
     case 'insights':
-      return <BarChart2 size={size} color={color as any} />;
+      return <BarChart2 size={size} color={color} />;
     case 'tools':
-      return <Wrench size={size} color={color as any} />;
+      return <Wrench size={size} color={color} />;
     default:
       return null;
   }
@@ -40,7 +39,7 @@ export default function TabLayout() {
         headerStyle: {
           backgroundColor: colors.primary,
         },
-        headerTintColor: colors.tagTextSelected,
+        headerTintColor: '#FFFFFF',
         headerTitleStyle: {
           fontWeight: '600',
         },

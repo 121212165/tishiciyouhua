@@ -10,16 +10,15 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { Mic, Send, X } from 'lucide-react-native';
+import { Send } from 'lucide-react-native';
 import { useStore } from '../../src/store';
-import { suggestTags } from '../../src/lib/anthropic';
+import { suggestTags } from '../../src/lib/tags';
 import { colors, spacing, borderRadius, fontSize } from '../../src/constants/theme';
 
 export default function CaptureScreen() {
   const [content, setContent] = useState('');
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
 
   const { addPainPoint, painPoints } = useStore();
 
@@ -52,18 +51,6 @@ export default function CaptureScreen() {
     );
   };
 
-  // Simulated voice recording (for demo - would integrate Speech-to-Text in production)
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    if (!isRecording) {
-      // Start recording simulation
-      setTimeout(() => {
-        setIsRecording(false);
-        setContent((prev) => prev + '我的手机总是太慢，浪费时间');
-      }, 2000);
-    }
-  };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -90,12 +77,6 @@ export default function CaptureScreen() {
               numberOfLines={4}
               textAlignVertical="top"
             />
-            <TouchableOpacity
-              style={[styles.MicButton, isRecording && styles.recording]}
-              onPress={toggleRecording}
-            >
-              <Mic size={24} color={isRecording ? colors.danger : colors.primary} />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -190,28 +171,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.border,
     overflow: 'hidden',
-    position: 'relative',
   },
   input: {
     padding: spacing.lg,
     fontSize: fontSize.md,
     color: colors.textPrimary,
     minHeight: 120,
-    paddingRight: 60,
-  },
-  MicButton: {
-    position: 'absolute',
-    right: spacing.lg,
-    bottom: spacing.lg,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.tagBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  recording: {
-    backgroundColor: colors.micBgRecording,
   },
   tagsSection: {
     paddingHorizontal: spacing.xl,

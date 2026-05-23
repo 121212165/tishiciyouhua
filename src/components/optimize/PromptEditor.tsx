@@ -5,11 +5,12 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 interface PromptEditorProps {
   onOptimize: (prompt: string) => Promise<void>
   isPending: boolean
+  onAbort?: () => void
 }
 
 const MAX_CHARS = 10000
 
-export function PromptEditor({ onOptimize, isPending }: PromptEditorProps) {
+export function PromptEditor({ onOptimize, isPending, onAbort }: PromptEditorProps) {
   const [prompt, setPrompt] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -67,30 +68,37 @@ export function PromptEditor({ onOptimize, isPending }: PromptEditorProps) {
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={'在这里输入你想要优化的提示词...\n\n例如：帮我写一篇关于气候变化的文章'}
+        placeholder={
+          '在这里输入你想要优化的提示词...\n\n例如：帮我写一篇关于气候变化的文章'
+        }
         className="input-field flex-1 min-h-[200px] resize-none leading-relaxed"
         disabled={isPending}
       />
 
       {/* Bottom toolbar */}
       <div className="flex items-center justify-between mt-4">
-        <p className="text-xs text-surface-500">
-          Ctrl+Enter 快速提交
-        </p>
-        <button
-          onClick={handleSubmit}
-          disabled={isPending || !prompt.trim() || isOverLimit}
-          className="btn-primary"
-        >
-          {isPending ? (
-            <span className="flex items-center gap-2">
-              <Spinner />
-              优化中...
-            </span>
-          ) : (
-            '开始优化'
+        <p className="text-xs text-surface-500">Ctrl+Enter 快速提交</p>
+        <div className="flex items-center gap-2">
+          {isPending && onAbort && (
+            <button onClick={onAbort} className="btn-secondary text-sm">
+              停止生成
+            </button>
           )}
-        </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isPending || !prompt.trim() || isOverLimit}
+            className="btn-primary"
+          >
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <Spinner />
+                优化中...
+              </span>
+            ) : (
+              '开始优化'
+            )}
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -98,11 +106,7 @@ export function PromptEditor({ onOptimize, isPending }: PromptEditorProps) {
 
 function Spinner() {
   return (
-    <svg
-      className="animate-spin h-4 w-4"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
+    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
       <circle
         className="opacity-25"
         cx="12"

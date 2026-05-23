@@ -12,20 +12,13 @@ export default function RootLayout() {
           headerStyle: {
             backgroundColor: colors.primary,
           },
-          headerTintColor: colors.tagTextSelected,
+          headerTintColor: '#FFFFFF',
           headerTitleStyle: {
             fontWeight: '600',
           },
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="refine/[id]"
-          options={{
-            title: '需求提炼',
-            presentation: 'modal',
-          }}
-        />
       </Stack>
     </ErrorBoundary>
   );
