@@ -1,6 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { getProvider, type AIResponse } from './provider'
 import { OPTIMIZE_SYSTEM_PROMPT, STYLES, type Style } from './prompts'
-import { MODELS, type ModelId } from './models'
+import { type ModelId } from './models'
 
 // Prompt Injection 防护
 const INJECTION_PATTERNS = [
@@ -42,34 +42,18 @@ export async function optimizePrompt(
   const styleConfig = STYLES[style]
   const systemPrompt = `${OPTIMIZE_SYSTEM_PROMPT}\n\n优化风格：${styleConfig.instruction}`
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const provider = getProvider(model)
   const startTime = Date.now()
-
-  const modelConfig = MODELS[model]
-  if (modelConfig.provider !== 'anthropic') {
-    // MVP: only Anthropic supported
-    throw new Error(`模型 ${modelConfig.name} 暂不支持，当前仅支持 Anthropic 模型`)
-  }
-
-  const response = await client.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
-    max_tokens: modelConfig.maxTokens,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: input }],
-  })
-
+  const response: AIResponse = await provider.optimize(input, systemPrompt, 4096)
   const latencyMs = Date.now() - startTime
-  const optimized = response.content[0]?.type === 'text' ? response.content[0].text : ''
-  const tokensInput = response.usage.input_tokens
-  const tokensOutput = response.usage.output_tokens
 
   return {
     original: input,
-    optimized,
+    optimized: response.content,
     model,
     style,
-    tokensInput,
-    tokensOutput,
+    tokensInput: response.tokensInput,
+    tokensOutput: response.tokensOutput,
     latencyMs,
   }
 }

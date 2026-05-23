@@ -3,13 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { LayoutGrid, Clock, CheckCircle, Layers } from 'lucide-react-native';
+import { Clock, CheckCircle } from 'lucide-react-native';
 import { useStore } from '../../src/store';
-import { useRouter } from 'expo-router';
 import { colors, spacing, borderRadius, fontSize } from '../../src/constants/theme';
 
 const { width } = Dimensions.get('window');
@@ -18,28 +16,16 @@ const COLUMN_WIDTH = width * 0.75;
 const COLUMNS = [
   { id: 'raw', title: '待验证', icon: Clock, color: colors.warning },
   { id: 'refined', title: '已定义', icon: CheckCircle, color: colors.primary },
-  { id: 'incubating', title: '开发中', icon: Layers, color: colors.secondary },
-  { id: 'done', title: '已完成', icon: CheckCircle, color: colors.success },
 ];
 
 export default function IncubateScreen() {
   const { painPoints } = useStore();
-  const router = useRouter();
 
-  // For demo, we'll show raw and refined items
   const getColumnItems = (status: string) => {
     return painPoints.filter((pp) =>
       status === 'raw' ? pp.status === 'raw' || pp.status === 'refining' :
-      status === 'refined' ? pp.status === 'refined' :
-      status === 'incubating' ? pp.status === 'incubating' :
-      pp.status === 'done'
+      pp.status === 'refined'
     );
-  };
-
-  const handleCardPress = (id: string, status: string) => {
-    if (status === 'raw' || status === 'refining') {
-      router.push(`/refine/${id}`);
-    }
   };
 
   return (
@@ -71,11 +57,7 @@ export default function IncubateScreen() {
                   </View>
                 ) : (
                   items.map((pp) => (
-                    <TouchableOpacity
-                      key={pp.id}
-                      style={styles.card}
-                      onPress={() => handleCardPress(pp.id, column.id)}
-                    >
+                    <View key={pp.id} style={styles.card}>
                       <Text style={styles.cardContent} numberOfLines={2}>
                         {pp.raw_content}
                       </Text>
@@ -96,7 +78,7 @@ export default function IncubateScreen() {
                           <Text style={styles.cardStatus}>已提炼</Text>
                         )}
                       </View>
-                    </TouchableOpacity>
+                    </View>
                   ))
                 )}
               </ScrollView>

@@ -22,7 +22,7 @@
   }
 
   ::selection {
-    @bg-primary-500/30;
+    @apply bg-primary-500/30;
   }
 }
 
