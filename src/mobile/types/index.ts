@@ -1,4 +1,4 @@
-export type PainPointStatus = 'raw' | 'refining' | 'refined' | 'archived';
+export type PainPointStatus = 'raw' | 'refining' | 'refined';
 
 export interface PainPoint {
   id: string;
@@ -24,31 +24,16 @@ export interface Profile {
   created_at: string;
 }
 
-export interface TagSuggestion {
-  tag: string;
-  confidence: number;
-}
-
-// Clipboard history item
 export interface ClipboardItem {
   id: string;
   content: string;
   created_at: string;
-  source?: string; // 'manual', 'system', etc.
+  source?: string;
 }
 
-// Video item
 export interface VideoItem {
   id: string;
-  uri: string; // local path or URL
+  uri: string;
   title?: string;
-  subtitles?: Subtitle[];
   created_at: string;
-}
-
-// Subtitle track
-export interface Subtitle {
-  start: number; // start time in seconds
-  end: number; // end time in seconds
-  text: string;
 }
