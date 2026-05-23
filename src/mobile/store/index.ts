@@ -3,24 +3,16 @@ import { supabase } from '../lib/supabase';
 import type { PainPoint, Profile } from '../types';
 
 interface AppState {
-  // User
   profile: Profile | null;
   isAuthenticated: boolean;
-
-  // Pain Points
   painPoints: PainPoint[];
   isLoading: boolean;
 
-  // Actions
   setProfile: (profile: Profile | null) => void;
   fetchPainPoints: (userId: string) => Promise<void>;
   addPainPoint: (content: string, tags: string[]) => Promise<PainPoint | null>;
   updatePainPoint: (id: string, updates: Partial<PainPoint>) => Promise<void>;
   deletePainPoint: (id: string) => Promise<void>;
-
-  // Refinement stubs - reserved for Anthropic API integration
-  // startRefinement, continueRefinement will be implemented when
-  // the AI refinement flow connects to a real provider.
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -112,14 +104,5 @@ export const useStore = create<AppState>((set, get) => ({
     } catch (error) {
       console.error('Error deleting pain point:', error);
     }
-  },
-
-  // Refinement flow handled in-screen via refine/[id].tsx
-  finishRefinement: async (painPointId, refinedStory, mvpFeatures) => {
-    await get().updatePainPoint(painPointId, {
-      status: 'refined',
-      refined_story: refinedStory,
-      mvp_features: mvpFeatures,
-    });
   },
 }));
