@@ -15,6 +15,7 @@ interface OptimizationResultProps {
 }
 
 const MODEL_LABELS: Record<ModelId, string> = {
+  'deepseek-v4-flash': 'DeepSeek V4 Flash',
   'claude-3-5-sonnet': 'Claude Sonnet 4.6',
   'claude-opus-4-5': 'Claude Opus 4.5',
   'claude-haiku-4-5': 'Claude Haiku 4.5',
