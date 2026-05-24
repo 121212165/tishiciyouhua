@@ -26,11 +26,14 @@ export class ClaudeProvider implements AIProvider {
   private client: Anthropic
   private modelId: string
 
-  constructor(modelId: ModelId = 'claude-3-5-sonnet') {
+  constructor(modelId: ModelId = 'deepseek-v4-flash') {
     const modelConfig = MODELS[modelId]
     this.name = modelConfig.name
     this.modelId = modelConfig.modelId
-    this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    this.client = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      baseURL: process.env.ANTHROPIC_BASE_URL || undefined,
+    })
   }
 
   async optimize(prompt: string, systemPrompt: string, maxTokens: number): Promise<AIResponse> {
@@ -108,6 +111,8 @@ export function getProvider(modelId: ModelId): AIProvider {
       return new OpenAIProvider()
     case 'gemini-pro':
       return new GeminiProvider()
+    case 'deepseek-v4-flash':
+      return new ClaudeProvider('deepseek-v4-flash')
     case 'claude-opus-4-5':
       return new ClaudeProvider('claude-opus-4-5')
     case 'claude-haiku-4-5':

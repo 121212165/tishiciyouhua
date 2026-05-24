@@ -1,4 +1,14 @@
 export const MODELS = {
+  'deepseek-v4-flash': {
+    name: 'DeepSeek V4 Flash',
+    provider: 'anthropic',
+    modelId: 'deepseek-v4-flash',
+    maxTokens: 8192,
+    costPer1kInput: 0.0001,
+    costPer1kOutput: 0.0002,
+    description: 'DeepSeek V4 Flash，超低延迟，适合快速优化',
+    tier: 'economy' as const,
+  },
   'claude-3-5-sonnet': {
     name: 'Claude Sonnet 4.6',
     provider: 'anthropic',

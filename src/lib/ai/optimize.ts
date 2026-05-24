@@ -220,7 +220,7 @@ export interface OptimizeResult {
  */
 export async function optimizePrompt(
   input: string,
-  model: ModelId = 'claude-3-5-sonnet',
+  model: ModelId = 'deepseek-v4-flash',
   style: Style = 'detailed'
 ): Promise<OptimizeResult> {
   const safety = sanitizeInput(input)
