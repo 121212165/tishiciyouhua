@@ -9,8 +9,12 @@ import type { Style } from '@/lib/ai/prompts'
 
 const optimizeSchema = z.object({
   prompt: z.string().min(1, '请输入提示词').max(10000, '提示词不能超过 10000 字符'),
-  model: z.enum(['claude-3-5-sonnet', 'gpt-4o', 'gemini-pro']).default('claude-3-5-sonnet'),
-  style: z.enum(['concise', 'detailed', 'creative']).default('detailed'),
+  model: z
+    .enum(['claude-3-5-sonnet', 'claude-opus-4-5', 'claude-haiku-4-5', 'gpt-4o', 'gemini-pro'])
+    .default('claude-3-5-sonnet'),
+  style: z
+    .enum(['concise', 'detailed', 'creative', 'academic', 'technical', 'business', 'instruction'])
+    .default('detailed'),
 })
 
 export interface OptimizeActionState {

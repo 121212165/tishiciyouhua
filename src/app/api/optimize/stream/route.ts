@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { getUser } from '@/lib/auth'
 import { sanitizeInput } from '@/lib/ai/optimize'
 import { getProvider } from '@/lib/ai/provider'
-import { OPTIMIZE_SYSTEM_PROMPT, STYLES, type Style } from '@/lib/ai/prompts'
+import { STYLES, type Style, buildSystemPromptWithLanguage } from '@/lib/ai/prompts'
 import { createClient } from '@/lib/supabase/server'
 import { checkQuota } from '@/lib/quota'
 import type { ModelId } from '@/lib/ai/models'
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     return new Response('无效的优化风格', { status: 400 })
   }
 
-  const systemPrompt = `${OPTIMIZE_SYSTEM_PROMPT}\n\n优化风格：${styleConfig.instruction}`
+  const systemPrompt = buildSystemPromptWithLanguage(style as Style, prompt)
 
   const provider = getProvider(model as ModelId)
   const encoder = new TextEncoder()
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const chunk of provider.streamOptimize(prompt, systemPrompt, 4096)) {
+        for await (const chunk of provider.streamOptimize(prompt, systemPrompt, 8192)) {
           if (chunk.type === 'text_delta' && chunk.text) {
             totalOutput += chunk.text
             controller.enqueue(

@@ -15,7 +15,9 @@ interface OptimizationResultProps {
 }
 
 const MODEL_LABELS: Record<ModelId, string> = {
-  'claude-3-5-sonnet': 'Claude 3.5 Sonnet',
+  'claude-3-5-sonnet': 'Claude Sonnet 4.6',
+  'claude-opus-4-5': 'Claude Opus 4.5',
+  'claude-haiku-4-5': 'Claude Haiku 4.5',
   'gpt-4o': 'GPT-4o',
   'gemini-pro': 'Gemini Pro',
 }

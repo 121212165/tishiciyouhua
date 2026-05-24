@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { MODELS, type ModelId } from './models'
 
 export interface AIResponse {
   content: string
@@ -21,16 +22,20 @@ export interface AIProvider {
 
 // Claude Provider
 export class ClaudeProvider implements AIProvider {
-  name = 'Claude 3.5 Sonnet'
+  name: string
   private client: Anthropic
+  private modelId: string
 
-  constructor() {
+  constructor(modelId: ModelId = 'claude-3-5-sonnet') {
+    const modelConfig = MODELS[modelId]
+    this.name = modelConfig.name
+    this.modelId = modelConfig.modelId
     this.client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   }
 
   async optimize(prompt: string, systemPrompt: string, maxTokens: number): Promise<AIResponse> {
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: this.modelId,
       max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: 'user', content: prompt }],
@@ -49,7 +54,7 @@ export class ClaudeProvider implements AIProvider {
     maxTokens: number
   ): AsyncGenerator<StreamChunk> {
     const stream = this.client.messages.stream({
-      model: 'claude-3-5-sonnet-20241022',
+      model: this.modelId,
       max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: 'user', content: prompt }],
@@ -97,14 +102,18 @@ export class GeminiProvider implements AIProvider {
 }
 
 // Provider factory
-export function getProvider(modelId: string): AIProvider {
+export function getProvider(modelId: ModelId): AIProvider {
   switch (modelId) {
     case 'gpt-4o':
       return new OpenAIProvider()
     case 'gemini-pro':
       return new GeminiProvider()
+    case 'claude-opus-4-5':
+      return new ClaudeProvider('claude-opus-4-5')
+    case 'claude-haiku-4-5':
+      return new ClaudeProvider('claude-haiku-4-5')
     case 'claude-3-5-sonnet':
     default:
-      return new ClaudeProvider()
+      return new ClaudeProvider('claude-3-5-sonnet')
   }
 }
