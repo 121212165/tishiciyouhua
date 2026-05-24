@@ -10,11 +10,52 @@
 type DetectedLanguage = 'zh' | 'en' | 'ja' | 'ko' | 'other'
 
 function detectLanguage(text: string): DetectedLanguage {
-  const samples = text.slice(0, 200)
-  if (/[一-鿿]/.test(samples)) return 'zh'
-  if (/[぀-ゟ゠-ヿ]/.test(samples)) return 'ja'
-  if (/[가-힯]/.test(samples)) return 'ko'
-  if (/[a-zA-Z]/.test(samples)) return 'en'
+  if (text.length === 0) return 'other'
+
+  // Sample from beginning, middle, and end to handle mixed-language text
+  const sampleSize = 200
+  const samples: string[] = []
+  samples.push(text.slice(0, sampleSize))
+  if (text.length > sampleSize * 2) {
+    const mid = Math.floor(text.length / 2)
+    samples.push(text.slice(mid - sampleSize / 2, mid + sampleSize / 2))
+  }
+  if (text.length > sampleSize) {
+    samples.push(text.slice(-sampleSize))
+  }
+  const combined = samples.join('')
+
+  // Count characters by class ratio across all samples
+  let zhCount = 0
+  let jaCount = 0
+  let koCount = 0
+  let enCount = 0
+
+  for (const ch of combined) {
+    const code = ch.codePointAt(0)!
+    // CJK Unified Ideographs (includes Chinese)
+    if (code >= 0x4e00 && code <= 0x9fff) zhCount++
+    // CJK Compatibility Ideographs
+    else if (code >= 0xf900 && code <= 0xfaff) zhCount++
+    // Hiragana + Katakana (Japanese-specific)
+    else if ((code >= 0x3040 && code <= 0x309f) || (code >= 0x30a0 && code <= 0x30ff)) jaCount++
+    // Hangul (Korean)
+    else if (code >= 0xac00 && code <= 0xd7af) koCount++
+    // Latin letters
+    else if ((code >= 0x41 && code <= 0x5a) || (code >= 0x61 && code <= 0x7a)) enCount++
+  }
+
+  const nonLatinTotal = zhCount + jaCount + koCount
+  // If most of the text is Latin, return English
+  if (nonLatinTotal === 0 && enCount > 0) return 'en'
+  if (enCount > 0 && enCount > nonLatinTotal * 3) return 'en'
+
+  // For CJK: check if Japanese-specific characters exist; otherwise default to Chinese
+  if (jaCount > 0 && jaCount > zhCount * 0.3) return 'ja'
+  if (koCount > 0 && koCount > zhCount * 0.3) return 'ko'
+  if (zhCount > 0) return 'zh'
+  if (enCount > 0) return 'en'
+
   return 'other'
 }
 
@@ -49,10 +90,45 @@ interface FewShotExample {
   output: string
 }
 
-const FEW_SHOT_EXAMPLES: FewShotExample[] = [
-  {
-    input: '帮我写一篇关于 AI 的文章',
-    output: `# 优化后的提示词
+const FEW_SHOT_EXAMPLES: Record<string, FewShotExample[]> = {
+  concise: [
+    {
+      input: '帮我写一篇关于 AI 的文章',
+      output: `# 优化后的提示词
+
+## 角色
+资深科技记者，专注 AI 领域。
+
+## 任务
+撰写 AI 现状与趋势分析文章（1500 字）。
+
+## 要求
+- 涵盖：大模型突破、行业应用、挑战、未来预测
+- 面向非技术读者，通俗易懂
+- 每个论点配数据支撑
+- 输出 Markdown 格式`,
+    },
+    {
+      input: '写一个排序算法',
+      output: `# 优化后的提示词
+
+## 角色
+算法工程师。
+
+## 任务
+TypeScript 实现归并排序（Merge Sort）。
+
+## 要求
+- 泛型签名：\`mergeSort<T>(arr: T[], compareFn: (a: T, b: T) => number): T[]\`
+- 不可变：返回新数组
+- 包含 JSDoc 复杂度注释
+- 附带 5 个测试用例（空/单/已排序/逆序/重复）`,
+    },
+  ],
+  detailed: [
+    {
+      input: '帮我写一篇关于 AI 的文章',
+      output: `# 优化后的提示词
 
 ## 角色
 你是一位资深科技记者，专注于人工智能领域的深度报道，拥有计算机科学和新闻传播双重背景。
@@ -82,10 +158,10 @@ const FEW_SHOT_EXAMPLES: FewShotExample[] = [
 - 不使用未经证实的数据或预测
 - 避免过度技术化的术语堆砌
 - 不做夸大其词的宣传性表述`,
-  },
-  {
-    input: '写一个排序算法',
-    output: `# 优化后的提示词
+    },
+    {
+      input: '写一个排序算法',
+      output: `# 优化后的提示词
 
 ## 角色
 你是一位算法工程师，擅长编写高效、可读的算法实现。
@@ -113,10 +189,10 @@ const FEW_SHOT_EXAMPLES: FewShotExample[] = [
 - 先简要说明算法思路（2-3 句话）
 - 然后给出完整代码
 - 最后给出测试用例`,
-  },
-  {
-    input: '分析一下我们公司的销售数据',
-    output: `# 优化后的提示词
+    },
+    {
+      input: '分析一下我们公司的销售数据',
+      output: `# 优化后的提示词
 
 ## 角色
 你是一位资深商业数据分析师，精通数据可视化和业务洞察。
@@ -156,8 +232,73 @@ const FEW_SHOT_EXAMPLES: FewShotExample[] = [
 - 每个维度给出「发现 -> 分析 -> 建议」结构
 - 总结 3-5 条可执行的业务建议
 - 标注置信度（高/中/低）`,
-  },
-]
+    },
+  ],
+  creative: [
+    {
+      input: '帮我写一篇关于 AI 的文章',
+      output: `# 优化后的提示词
+
+## 角色
+你是一位科学散文作家，擅长用文学笔法解读前沿科技，将抽象概念转化为生动的故事和意象。
+
+## 任务
+撰写一篇关于人工智能的创意散文（1200-1500 字），以「AI 是什么」为题，用独特的视角和叙事方式呈现。
+
+## 创意要求
+- 选择一个出人意料的切入点（如：从一封未来邮件、一次博物馆导览、一棵数据之树的年轮）
+- 使用隐喻和类比让技术概念变得可感知
+- 在严谨的事实基础上融入诗意表达
+- 结尾留有开放性的思考空间，引发读者共鸣
+
+## 输出格式
+- 散文体，不需要标题分级
+- 段落之间留白，营造阅读节奏
+- 可在文末附一段创作手记，说明构思意图`,
+    },
+  ],
+  technical: [
+    {
+      input: '写一个排序算法',
+      output: `# 优化后的提示词
+
+## 角色
+你是一位 TypeScript 核心库维护者，负责编写高质量的工具函数库。
+
+## 任务
+实现一个生产级归并排序（Merge Sort）函数。
+
+## API 签名
+\`\`\`typescript
+function mergeSort<T>(
+  arr: readonly T[],
+  compareFn: (a: T, b: T) => number
+): T[]
+\`\`\`
+
+## 技术规格
+- 时间复杂度：O(n log n) — 包含证明
+- 空间复杂度：O(n) — 说明原因
+- 稳定性：稳定排序 — 标注在 JSDoc 中
+- 不修改输入数组，返回新数组实例
+
+## 代码规范
+- JSDoc 包含 \`@template\`, \`@param\`, \`@returns\`, \`@example\`
+- 关键步骤添加行内注释
+- 处理边界：空数组、单元素、已排序、逆序、含 undefined 元素
+- 导出方式：具名导出 + 默认导出
+
+## 测试
+- 使用 Vitest 编写测试套件
+- 覆盖率要求：分支 100%，语句 100%
+- 测试用例：空数组、单元素、双元素、已排序、逆序、含重复、随机大数组（1000+元素）
+- 性能基准：1000 元素排序 < 5ms`,
+    },
+  ],
+}
+
+/** Default examples used for styles without a dedicated set */
+const FEW_SHOT_EXAMPLES_DEFAULT: FewShotExample[] = FEW_SHOT_EXAMPLES['detailed']!
 
 // --- Core System Prompt ---
 
@@ -218,37 +359,37 @@ export const STYLES: Record<string, StyleConfig> = {
   concise: {
     name: '简洁',
     instruction:
-      '保持精炼，去除冗余表述，只保留核心指令和必要约束。使用短句和关键词，适合快速执行的场景。将长段落压缩为要点列表，避免重复说明。',
+      '保持精炼，去除冗余表述，只保留核心指令和必要约束。使用短句和关键词，适合快速执行的场景。将长段落压缩为要点列表，避免重复说明。输出不超过原输入长度的 2 倍。使用要点列表（bullet points）替代长段落。',
   },
   detailed: {
     name: '详细',
     instruction:
-      '全面补充上下文、角色设定、格式要求和约束条件。使用 CO-STAR 框架的完整结构，包含背景说明、具体任务描述、输出格式要求和边界条件。适合需要高质量输出的复杂任务。',
+      '全面补充上下文、角色设定、格式要求和约束条件。使用 CO-STAR 框架的完整结构，包含背景说明、具体任务描述、输出格式要求和边界条件。适合需要高质量输出的复杂任务。每个维度至少包含 3 个具体要点。使用 Markdown 标题分级（至少 3 层：\`##\` / \`###\` / \`####\`）。',
   },
   creative: {
     name: '创意',
     instruction:
-      '添加创意思维角度，鼓励多角度分析和创新表达。引入类比、比喻和跨领域联想，突破常规思路框架。在结构化的基础上融入发散性思维元素，激发 AI 的创造性输出。',
+      '添加创意思维角度，鼓励多角度分析和创新表达。引入类比、比喻和跨领域联想，突破常规思路框架。在结构化的基础上融入发散性思维元素，激发 AI 的创造性输出。至少使用 1 个类比或隐喻来解释核心概念。要求「跳出常规」的提示语，如：换个角度、类比其他领域。',
   },
   academic: {
     name: '学术',
     instruction:
-      '采用学术论文的严谨风格，强调逻辑论证和结构化表达。要求引用来源、使用精确术语、保持客观中立的分析立场。添加研究方法论的思考框架，要求分步论证和结论验证。',
+      '采用学术论文的严谨风格，强调逻辑论证和结构化表达。要求引用来源、使用精确术语、保持客观中立的分析立场。添加研究方法论的思考框架，要求分步论证和结论验证。必须包含参考文献格式的引用（如 [Author, Year]）。使用「摘要 -> 方法 -> 论证 -> 结论」的结构。',
   },
   technical: {
     name: '技术文档',
     instruction:
-      '采用技术文档的精确风格，适合编程、架构设计和技术方案场景。要求代码示例、API 说明、错误处理方案和技术约束说明。使用开发者友好的术语和格式，包含输入输出规格定义。',
+      '采用技术文档的精确风格，适合编程、架构设计和技术方案场景。要求代码示例、API 说明、错误处理方案和技术约束说明。使用开发者友好的术语和格式，包含输入输出规格定义。必须包含至少 1 个可运行的代码示例（含语言标注的代码块）。使用表格展示参数/返回值规格。',
   },
   business: {
     name: '商务',
     instruction:
-      '采用专业商务沟通风格，强调结果导向和可执行性。使用结构化的商业分析框架（SWOT、ROI、KPI 等），要求明确的时间线、责任人和交付物。语言简洁专业，避免技术术语堆砌。',
+      '采用专业商务沟通风格，强调结果导向和可执行性。使用结构化的商业分析框架（SWOT、ROI、KPI 等），要求明确的时间线、责任人和交付物。语言简洁专业，避免技术术语堆砌。必须包含明确的「行动项」（Action Items）清单，注明优先级和时间线。',
   },
   instruction: {
     name: '指令式',
     instruction:
-      '将提示词转化为分步骤的可执行指令序列。每一步使用动词开头，明确输入输出，包含条件分支和异常处理逻辑。适合需要精确控制 AI 执行流程的场景，如工作流自动化和任务编排。',
+      '将提示词转化为分步骤的可执行指令序列。每一步使用动词开头，明确输入输出，包含条件分支和异常处理逻辑。适合需要精确控制 AI 执行流程的场景，如工作流自动化和任务编排。每步骤使用编号列表（1. 2. 3. ...）。包含「输入」和「输出」规格说明。',
   },
 } as const
 
@@ -258,23 +399,6 @@ export const STYLE_IDS = Object.keys(STYLES) as Style[]
 
 // --- Helper: Build System Prompt ---
 
-export function buildSystemPrompt(style: Style): string {
-  const styleConfig = STYLES[style]
-  if (!styleConfig) {
-    throw new Error(`未知的优化风格: ${style}`)
-  }
-
-  const languageHint = detectLanguage('') // will be overridden at call site
-
-  return `${OPTIMIZE_SYSTEM_PROMPT}
-
-# 当前优化风格
-${styleConfig.instruction}
-
-# 输出语言
-${LANGUAGE_NAMES[languageHint]}`
-}
-
 export function buildSystemPromptWithLanguage(style: Style, inputText: string): string {
   const styleConfig = STYLES[style]
   if (!styleConfig) {
@@ -282,6 +406,7 @@ export function buildSystemPromptWithLanguage(style: Style, inputText: string): 
   }
 
   const lang = detectLanguage(inputText)
+  const examples = FEW_SHOT_EXAMPLES[style] ?? FEW_SHOT_EXAMPLES_DEFAULT
 
   return `${OPTIMIZE_SYSTEM_PROMPT}
 
@@ -294,7 +419,7 @@ ${styleConfig.instruction}
 # 参考示例
 以下是优化前后的对比示例，供你理解优化标准（不要照搬内容，只参考优化方法）：
 
-${FEW_SHOT_EXAMPLES.map(
+${examples.map(
   (ex, i) => `## 示例 ${i + 1}
 **用户输入：** ${ex.input}
 
