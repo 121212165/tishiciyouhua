@@ -171,6 +171,51 @@ export const PROMPT_LIBRARY: readonly LibraryPrompt[] = [
     language: 'zh',
   },
 
+  {
+    id: 'write-product-description',
+    name: '产品描述文案',
+    category: '写作',
+    originalPrompt: '帮我写个产品描述',
+    optimizedPrompt: `# 角色
+你是一位资深文案策划师，擅长撰写高转化率的产品描述文案，精通 AIDA 模型和消费者心理学。
+
+# 任务
+为指定产品撰写有说服力的产品描述文案。
+
+# 产品信息
+- 产品名称：[名称]
+- 产品类型：[类型]
+- 核心功能：[功能 1, 功能 2, 功能 3]
+- 目标用户：[用户画像]
+- 使用场景：[场景描述]
+
+# 文案框架
+1. **产品标语**：一句话概括核心价值
+2. **核心卖点**（3 个）：
+   - 每个卖点用一句话总结
+   - 详细说明用户获得的具体好处
+   - 用数据或案例支撑
+3. **详细描述**（200 字左右）：
+   - 使用 AIDA 模型（注意-兴趣-欲望-行动）
+   - 功能转化为好处（"所以你可以..."）
+   - 社会证明（用户评价或数据）
+4. **行动号召（CTA）**：明确的下一步操作
+
+# 输出格式
+1. 产品标语（一句话）
+2. 核心卖点（3 个，每个含标题和描述）
+3. 详细描述（200 字左右）
+4. 行动号召（CTA）
+
+# 约束
+- 语气：[专业/亲切/高端/活力]，根据产品调性选择
+- 避免夸大宣传，突出真实价值
+- 使用简洁有力的短句
+- 符合广告法规范`,
+    tags: ['产品描述', '文案', '营销', 'copywriting'],
+    language: 'zh',
+  },
+
   // ============================================================
   // 编程
   // ============================================================
@@ -584,6 +629,52 @@ export const PROMPT_LIBRARY: readonly LibraryPrompt[] = [
     language: 'zh',
   },
 
+  {
+    id: 'marketing-email-campaign',
+    name: '邮件营销活动',
+    category: '营销',
+    originalPrompt: '帮我写一封营销邮件',
+    optimizedPrompt: `# 角色
+你是一位邮件营销专家，精通高打开率和高转化率邮件的撰写技巧，熟悉各大邮件服务商的反垃圾邮件规则。
+
+# 任务
+为指定活动/产品设计邮件营销内容。
+
+# 活动信息
+- 产品/服务：[描述]
+- 目标受众：[受众画像]
+- 邮件目的：[促销/通知/激活/留存]
+- 核心价值点：[列出]
+
+# 邮件结构
+1. **邮件主题行**：提供 3 个备选
+   - 每个 40 字符以内
+   - 含 A/B 测试建议
+   - 避免触发垃圾邮件过滤器
+2. **预览文本**：30-40 字符，补充主题行
+3. **正文结构**：
+   - 标题：引人注意的开头
+   - 痛点共鸣：与读者的问题产生连接
+   - 解决方案：产品/服务如何解决问题
+   - 社会证明：数据或用户评价
+   - 行动号召：明确的下一步
+4. **CTA 按钮文案**：2-3 个备选
+
+# 输出格式
+- 3 个邮件主题行备选（含推荐理由）
+- 预览文本
+- 邮件正文（HTML 友好的结构描述）
+- CTA 方案（按钮文案 + 位置建议）
+
+# 约束
+- 语气亲切但专业
+- 邮件正文控制在 300 字以内
+- 避免全大写、过多感叹号等垃圾邮件特征
+- 一个邮件一个核心目的`,
+    tags: ['邮件营销', 'EDM', '转化率', 'email marketing'],
+    language: 'zh',
+  },
+
   // ============================================================
   // 教育
   // ============================================================
@@ -692,7 +783,7 @@ export const PROMPT_LIBRARY: readonly LibraryPrompt[] = [
   },
 
   // ============================================================
-  // 翻译
+  // 翻译 (merged from templates.ts)
   // ============================================================
   {
     id: 'translate-literary',
@@ -1363,4 +1454,87 @@ export function getLibraryStats() {
       count: getPromptsByCategory(cat).length,
     })),
   }
+}
+
+// ---------------------------------------------------------------------------
+// Backward-Compatible Exports (formerly in templates.ts)
+// ---------------------------------------------------------------------------
+// These aliases and functions preserve compatibility with code that imported
+// from the old templates.ts module. New code should use the LibraryPrompt /
+// PromptCategory API above instead.
+
+/** @deprecated Use LibraryPrompt instead */
+export type PromptTemplate = LibraryPrompt
+
+/** @deprecated Use PromptCategory instead */
+export type TemplateCategory =
+  | 'writing'
+  | 'programming'
+  | 'analysis'
+  | 'translation'
+  | 'marketing'
+  | 'education'
+
+/**
+ * Mapping from legacy English category keys to display names.
+ * @deprecated Use PromptCategory (Chinese string literals) directly.
+ */
+export const TEMPLATE_CATEGORIES: Record<TemplateCategory, string> = {
+  writing: '写作',
+  programming: '编程',
+  analysis: '分析',
+  translation: '翻译',
+  marketing: '营销',
+  education: '教育',
+}
+
+/** Map legacy English category key to the canonical Chinese PromptCategory */
+const LEGACY_CATEGORY_MAP: Record<TemplateCategory, PromptCategory> = {
+  writing: '写作',
+  programming: '编程',
+  analysis: '分析',
+  translation: '翻译',
+  marketing: '营销',
+  education: '教育',
+}
+
+/**
+ * Get all templates (compatibility wrapper).
+ * @deprecated Use PROMPT_LIBRARY directly.
+ */
+export function getAllTemplates(): readonly LibraryPrompt[] {
+  return PROMPT_LIBRARY
+}
+
+/**
+ * Get templates by legacy English category key.
+ * @deprecated Use getPromptsByCategory() with a PromptCategory instead.
+ */
+export function getTemplatesByCategory(category: TemplateCategory): readonly LibraryPrompt[] {
+  return getPromptsByCategory(LEGACY_CATEGORY_MAP[category])
+}
+
+/**
+ * Search templates by query string (name, description, tags).
+ * @deprecated Use searchPrompts() instead.
+ */
+export function searchTemplates(query: string): readonly LibraryPrompt[] {
+  const lowerQuery = query.toLowerCase().trim()
+  if (lowerQuery.length === 0) return PROMPT_LIBRARY
+
+  return PROMPT_LIBRARY.filter(
+    (p) =>
+      p.name.toLowerCase().includes(lowerQuery) ||
+      p.originalPrompt.toLowerCase().includes(lowerQuery) ||
+      p.optimizedPrompt.toLowerCase().includes(lowerQuery) ||
+      p.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+  )
+}
+
+/**
+ * Get template by ID.
+ * @deprecated Use getPromptById() instead.
+ */
+export function getTemplateById(id: string): LibraryPrompt | undefined {
+  return getPromptById(id)
 }
