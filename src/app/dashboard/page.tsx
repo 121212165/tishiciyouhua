@@ -1,13 +1,50 @@
+'use client'
+
 import Link from 'next/link'
+import { useUsage } from '@/hooks/useUsage'
+import { useSubscription } from '@/hooks/useSubscription'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+
+const PLAN_LABELS: Record<string, string> = {
+  free: '免费版',
+  pro: '专业版',
+  enterprise: '企业版',
+}
+
+function formatNumber(value: number): string {
+  return value.toLocaleString('zh-CN')
+}
+
+function estimateSavedTime(optimizations: number): string {
+  const totalSeconds = optimizations * 30
+  if (totalSeconds < 60) return `${totalSeconds}秒`
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  if (minutes < 60) return seconds > 0 ? `${minutes}分${seconds}秒` : `${minutes}分钟`
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  return remainingMinutes > 0 ? `${hours}小时${remainingMinutes}分钟` : `${hours}小时`
+}
 
 export default function DashboardPage() {
+  const { usage, isLoading } = useUsage()
+  const { subscription, isLoading: isSubLoading } = useSubscription()
+
   return (
     <div className="space-y-8">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-bold text-surface-50 mb-2">
-          欢迎使用 PromptChef
-        </h1>
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-2xl font-bold text-surface-50">
+            欢迎使用 PromptChef
+          </h1>
+          {!isSubLoading && (
+            <Badge variant="secondary">
+              {PLAN_LABELS[subscription.plan] ?? subscription.plan}
+            </Badge>
+          )}
+        </div>
         <p className="text-surface-400">
           开始优化你的提示词，让 AI 输出更精准的结果。
         </p>
@@ -54,14 +91,25 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Usage stats placeholder */}
+      {/* Usage stats */}
       <div className="card">
         <h3 className="font-semibold text-surface-100 mb-4">今日使用量</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatItem label="优化次数" value="--" />
-          <StatItem label="输入 Tokens" value="--" />
-          <StatItem label="输出 Tokens" value="--" />
-          <StatItem label="节省时间" value="--" />
+          {isLoading ? (
+            <>
+              <StatSkeleton />
+              <StatSkeleton />
+              <StatSkeleton />
+              <StatSkeleton />
+            </>
+          ) : (
+            <>
+              <StatItem label="优化次数" value={formatNumber(usage.totalOptimizations)} />
+              <StatItem label="输入 Tokens" value={formatNumber(usage.tokensInput)} />
+              <StatItem label="输出 Tokens" value={formatNumber(usage.tokensOutput)} />
+              <StatItem label="节省时间" value={estimateSavedTime(usage.totalOptimizations)} />
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -73,6 +121,15 @@ function StatItem({ label, value }: { label: string; value: string }) {
     <div className="text-center">
       <div className="text-2xl font-bold text-surface-100">{value}</div>
       <div className="text-xs text-surface-500 mt-1">{label}</div>
+    </div>
+  )
+}
+
+function StatSkeleton() {
+  return (
+    <div className="text-center space-y-2">
+      <Skeleton className="h-8 w-20 mx-auto" />
+      <Skeleton className="h-3 w-16 mx-auto" />
     </div>
   )
 }
