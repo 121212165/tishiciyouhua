@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 const inter = Inter({
@@ -30,6 +31,7 @@ export default function RootLayout({
     <html lang="zh-CN" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen bg-surface-950 font-sans text-surface-50 antialiased">
         {children}
+        <Toaster />
       </body>
     </html>
   )

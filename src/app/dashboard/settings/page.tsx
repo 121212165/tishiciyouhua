@@ -1,6 +1,40 @@
 'use client'
 
+import { useUser } from '@/hooks/useUser'
+import { useSubscription } from '@/hooks/useSubscription'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+
+const PLAN_LABELS: Record<string, string> = {
+  free: '免费版',
+  pro: '专业版',
+  enterprise: '企业版',
+}
+
+const PLAN_COLORS: Record<string, string> = {
+  free: 'secondary',
+  pro: 'default',
+  enterprise: 'default',
+}
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '--'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
+
 export default function SettingsPage() {
+  const { data: user, isLoading: userLoading } = useUser()
+  const { subscription, isLoading: subLoading } = useSubscription()
+
+  const isLoading = userLoading || subLoading
+
   return (
     <div className="space-y-8">
       <div>
@@ -16,27 +50,104 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-surface-200 mb-1.5">
               邮箱
             </label>
-            <input
-              type="email"
-              disabled
-              value="--"
-              className="input-field opacity-60 cursor-not-allowed"
-            />
+            {isLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <input
+                type="email"
+                disabled
+                value={user?.email ?? '--'}
+                className="input-field opacity-60 cursor-not-allowed"
+              />
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-surface-200 mb-1.5">
               显示名称
             </label>
-            <input
-              type="text"
-              placeholder="设置显示名称"
-              className="input-field"
-            />
+            {isLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <input
+                type="text"
+                placeholder="设置显示名称"
+                defaultValue={
+                  user?.profile?.display_name ?? ''
+                }
+                className="input-field"
+              />
+            )}
           </div>
-          <button className="btn-primary text-sm" disabled>
+          <Button variant="default" size="sm" disabled>
             保存（即将支持）
-          </button>
+          </Button>
         </div>
+      </section>
+
+      {/* Subscription */}
+      <section className="card">
+        <h2 className="text-lg font-semibold text-surface-100 mb-4">
+          订阅管理
+        </h2>
+
+        {subLoading ? (
+          <div className="space-y-3 max-w-md">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-56" />
+            <Skeleton className="h-10 w-28" />
+          </div>
+        ) : (
+          <div className="space-y-4 max-w-md">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-surface-200">当前计划：</span>
+              <Badge
+                variant={
+                  (PLAN_COLORS[subscription.plan] as 'default' | 'secondary') ??
+                  'secondary'
+                }
+              >
+                {PLAN_LABELS[subscription.plan] ?? subscription.plan}
+              </Badge>
+              <Badge variant="outline" className="text-surface-400 border-surface-600">
+                {subscription.status === 'active' ? '生效中' : subscription.status}
+              </Badge>
+            </div>
+
+            {subscription.current_period_end && (
+              <p className="text-sm text-surface-400">
+                到期时间：{formatDate(subscription.current_period_end)}
+              </p>
+            )}
+
+            <Separator className="bg-surface-700" />
+
+            <div className="flex items-center gap-3">
+              {subscription.plan === 'free' ? (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => {
+                    // TODO: redirect to pricing / checkout
+                    window.location.href = '/dashboard#pricing'
+                  }}
+                >
+                  升级计划
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    // TODO: redirect to Stripe customer portal
+                    window.location.href = '/api/stripe/portal'
+                  }}
+                >
+                  管理订阅
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Preferences */}
@@ -62,40 +173,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </section>
-
-      {/* Usage */}
-      <section className="card">
-        <h2 className="text-lg font-semibold text-surface-100 mb-4">使用量统计</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <UsageStat label="总优化次数" value="--" />
-          <UsageStat label="本月优化次数" value="--" />
-          <UsageStat label="总 Tokens 消耗" value="--" />
-          <UsageStat label="预估节省时间" value="--" />
-        </div>
-      </section>
-
-      {/* Subscription placeholder */}
-      <section className="card">
-        <h2 className="text-lg font-semibold text-surface-100 mb-4">订阅管理</h2>
-        <div className="flex items-center justify-between max-w-md">
-          <div>
-            <p className="text-sm text-surface-200">当前计划：免费版</p>
-            <p className="text-xs text-surface-500 mt-1">高级订阅即将推出</p>
-          </div>
-          <button className="btn-secondary text-sm" disabled>
-            升级（即将支持）
-          </button>
-        </div>
-      </section>
-    </div>
-  )
-}
-
-function UsageStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="text-xl font-bold text-surface-100">{value}</div>
-      <div className="text-xs text-surface-500 mt-1">{label}</div>
     </div>
   )
 }

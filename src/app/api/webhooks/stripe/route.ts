@@ -37,16 +37,12 @@ export async function POST(req: NextRequest) {
           .from('subscriptions')
           .update({
             stripe_subscription_id: subscription.id,
-            stripe_price_id: subscription.items.data[0]?.price.id ?? null,
             plan: 'pro',
             status: 'active',
-            current_period_start: new Date(
-              subscription.current_period_start * 1000
-            ).toISOString(),
             current_period_end: new Date(
               subscription.current_period_end * 1000
             ).toISOString(),
-          })
+          } as never)
           .eq('user_id', userId)
 
         await supabase
@@ -70,14 +66,10 @@ export async function POST(req: NextRequest) {
           .from('subscriptions')
           .update({
             status: subscription.status === 'active' ? 'active' : subscription.status,
-            cancel_at_period_end: subscription.cancel_at_period_end,
-            current_period_start: new Date(
-              subscription.current_period_start * 1000
-            ).toISOString(),
             current_period_end: new Date(
               subscription.current_period_end * 1000
             ).toISOString(),
-          })
+          } as never)
           .eq('stripe_subscription_id', subscription.id)
       }
       break
@@ -100,7 +92,7 @@ export async function POST(req: NextRequest) {
         await supabase
           .from('profiles')
           .update({ plan: 'free' })
-          .eq('id', sub.user_id)
+          .eq('id', (sub as { user_id: string }).user_id)
       }
       break
     }

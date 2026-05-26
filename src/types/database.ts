@@ -1,78 +1,55 @@
 /**
  * Supabase database type definitions.
- * Matches the schema in supabase/migrations/001_initial_schema.sql
+ * Matches the schema defined in supabase/migrations/00001_initial_schema.sql
+ * with RLS policies from 00002 and trigger from 00003.
+ *
+ * Usage:
+ *   import { createClient } from '@/lib/supabase/server'
+ *   import type { Database } from '@/types/database'
+ *   const supabase = await createClient<Database>()
  */
 
-export type Plan = 'free' | 'pro' | 'enterprise'
-export type Style = 'concise' | 'detailed' | 'creative'
+// ---------------------------------------------------------------------------
+// Shared types
+// ---------------------------------------------------------------------------
 
-export interface Profile {
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json }
+  | Json[]
+
+export type Plan = 'free' | 'pro' | 'enterprise'
+
+// ---------------------------------------------------------------------------
+// Table row types
+// ---------------------------------------------------------------------------
+
+export type Profile = {
   id: string
+  email: string | null
   display_name: string | null
-  avatar_url: string | null
   plan: Plan
-  preferred_model: string
-  preferred_language: string
   created_at: string
   updated_at: string
 }
 
-export interface Optimization {
+export type Optimization = {
   id: string
   user_id: string
   original_prompt: string
-  optimized_prompt: string | null
+  optimized_prompt: string
   model: string
-  style: Style
-  tokens_input: number | null
-  tokens_output: number | null
-  latency_ms: number | null
-  rating: number | null
-  is_public: boolean
-  share_token: string | null
-  metadata: Record<string, unknown>
+  style: string
+  tokens_input: number
+  tokens_output: number
+  latency_ms: number
   created_at: string
-  updated_at: string
 }
 
-export interface Template {
-  id: string
-  user_id: string | null
-  title: string
-  description: string | null
-  category: string
-  content: string
-  variables: TemplateVariable[]
-  is_public: boolean
-  use_count: number
-  tags: string[]
-  created_at: string
-  updated_at: string
-}
-
-export interface TemplateVariable {
-  name: string
-  description?: string
-  default?: string
-  required?: boolean
-}
-
-export interface Subscription {
-  id: string
-  user_id: string
-  stripe_customer_id: string | null
-  stripe_subscription_id: string | null
-  stripe_price_id: string | null
-  plan: Plan
-  status: string
-  current_period_start: string | null
-  current_period_end: string | null
-  cancel_at_period_end: boolean | null
-  created_at: string
-  updated_at: string
-}
-
-export interface UsageRecord {
+export type UsageRecord = {
   id: string
   user_id: string
   optimization_id: string | null
@@ -82,63 +59,118 @@ export interface UsageRecord {
   created_at: string
 }
 
-/**
- * Supabase database schema type.
- * Use with createClient<Database>() for type-safe queries.
- */
-export interface Database {
+export type Subscription = {
+  id: string
+  user_id: string
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  plan: string
+  status: string
+  current_period_end: string | null
+  created_at: string
+  updated_at: string
+}
+
+// ---------------------------------------------------------------------------
+// Database schema
+// ---------------------------------------------------------------------------
+
+export type Database = {
   public: {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: Omit<Profile, 'created_at' | 'updated_at'> & {
+        /** Insert: id is required (FK to auth.users), timestamps optional. */
+        Insert: {
+          id: string
+          email?: string | null
+          display_name?: string | null
+          plan?: Plan
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>> & {
+        /** Update: id cannot be changed, everything else is optional. */
+        Update: {
+          email?: string | null
+          display_name?: string | null
+          plan?: Plan
+          created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       optimizations: {
         Row: Optimization
-        Insert: Omit<Optimization, 'id' | 'created_at' | 'updated_at'> & {
+        /** Insert: id and created_at are auto-generated, all others required. */
+        Insert: {
           id?: string
+          user_id: string
+          original_prompt: string
+          optimized_prompt: string
+          model: string
+          style: string
+          tokens_input?: number
+          tokens_output?: number
+          latency_ms?: number
           created_at?: string
-          updated_at?: string
         }
-        Update: Partial<Omit<Optimization, 'id' | 'user_id' | 'created_at' | 'updated_at'>> & {
-          updated_at?: string
+        /** Update: id and user_id are immutable, everything else optional. */
+        Update: {
+          original_prompt?: string
+          optimized_prompt?: string
+          model?: string
+          style?: string
+          tokens_input?: number
+          tokens_output?: number
+          latency_ms?: number
         }
-      }
-      templates: {
-        Row: Template
-        Insert: Omit<Template, 'id' | 'created_at' | 'updated_at'> & {
-          id?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: Partial<Omit<Template, 'id' | 'created_at' | 'updated_at'>> & {
-          updated_at?: string
-        }
-      }
-      subscriptions: {
-        Row: Subscription
-        Insert: Omit<Subscription, 'id' | 'created_at' | 'updated_at'> & {
-          id?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: Partial<Omit<Subscription, 'id' | 'user_id' | 'created_at' | 'updated_at'>> & {
-          updated_at?: string
-        }
+        Relationships: []
       }
       usage_records: {
         Row: UsageRecord
-        Insert: Omit<UsageRecord, 'id' | 'created_at'> & {
+        /** Insert: id and created_at are auto-generated. */
+        Insert: {
           id?: string
+          user_id: string
+          optimization_id?: string | null
+          action: string
+          tokens_used?: number
+          cost_cents?: number
           created_at?: string
         }
-        Update: Partial<Omit<UsageRecord, 'id' | 'user_id' | 'created_at'>>
+        /** Update: usage records are append-only in practice, but the type is
+         *  provided for completeness (e.g. correcting cost_cents server-side). */
+        Update: {
+          action?: string
+          tokens_used?: number
+          cost_cents?: number
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: Subscription
+        /** Insert: id and timestamps are auto-generated. */
+        Insert: {
+          id?: string
+          user_id: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          plan?: string
+          status?: string
+          current_period_end?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        /** Update: id and user_id are immutable. */
+        Update: {
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          plan?: string
+          status?: string
+          current_period_end?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: Record<string, never>
