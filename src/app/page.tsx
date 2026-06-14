@@ -1,125 +1,177 @@
-import Link from 'next/link'
+'use client'
 
-const features = [
-  {
-    icon: (
-      <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-      </svg>
-    ),
-    color: 'indigo',
-    title: '智能优化',
-    description: 'AI 自动分析你的提示词，补充缺失的上下文、角色设定和输出格式要求，大幅提升生成质量。',
-  },
-  {
-    icon: (
-      <svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: 'purple',
-    title: '多模型对比',
-    description: '支持 Claude、GPT-4 等主流模型，一键对比不同模型的优化效果，找到最适合你场景的方案。',
-  },
-  {
-    icon: (
-      <svg className="w-5 h-5 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    color: 'pink',
-    title: '历史管理',
-    description: '自动保存每次优化记录，支持搜索、收藏和复用，构建你的专属提示词知识库。',
-  },
-]
+import { useState, useCallback, useRef } from 'react'
 
-export default function HomePage() {
+export default function Home() {
+  const [prompt, setPrompt] = useState('')
+  const [result, setResult] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [stats, setStats] = useState<{ tokens: number; latency: number } | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
+
+  const handleOptimize = useCallback(async () => {
+    if (!prompt.trim() || isStreaming) return
+    abortRef.current?.abort()
+    abortRef.current = new AbortController()
+    setResult('')
+    setError(null)
+    setStats(null)
+    setIsStreaming(true)
+
+    try {
+      const res = await fetch('/api/optimize/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt.trim() }),
+        signal: abortRef.current.signal,
+      })
+
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || '请求失败')
+      }
+
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error('无法读取响应')
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let totalContent = ''
+      const startTime = Date.now()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const data = JSON.parse(line.slice(6))
+          if (data.type === 'text' && data.content) {
+            totalContent += data.content
+            setResult(totalContent)
+          } else if (data.type === 'done') {
+            setStats({
+              tokens: (data.tokensInput ?? 0) + (data.tokensOutput ?? 0),
+              latency: Date.now() - startTime,
+            })
+          } else if (data.type === 'error') {
+            throw new Error(data.message ?? '优化失败')
+          }
+        }
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
+      setError(err instanceof Error ? err.message : '优化失败')
+    } finally {
+      setIsStreaming(false)
+    }
+  }, [prompt, isStreaming])
+
+  const handleCopy = useCallback(async () => {
+    if (!result) return
+    try {
+      await navigator.clipboard.writeText(result)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }, [result])
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="border-b border-surface-800">
-        <div className="container-app h-16 flex items-center justify-between">
-          <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            PromptChef
-          </span>
-          <nav className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className="text-sm text-surface-400 hover:text-surface-100 transition-colors"
-            >
-              登录
-            </Link>
-            <Link href="/signup" className="btn-primary text-sm px-4 py-2">
-              免费注册
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-950 text-gray-50">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          提示词优化器
+        </h1>
+        <p className="text-gray-400 mb-8">输入你的原始提示词，AI 使用 CO-STAR 框架自动优化</p>
 
-      {/* Hero */}
-      <main className="flex-1">
-        <section className="container-app pt-24 pb-20 text-center">
-          <div className="inline-block mb-6 px-3 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-medium">
-            AI 驱动的提示词优化
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">原始提示词</label>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !isStreaming && prompt.trim()) {
+                  e.preventDefault()
+                  handleOptimize()
+                }
+              }}
+              placeholder="在这里输入你想要优化的提示词...&#10;&#10;例如：帮我写一篇关于气候变化的文章"
+              className="w-full h-48 rounded-xl border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 resize-none"
+              disabled={isStreaming}
+            />
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-gray-500">Ctrl+Enter 快速提交</span>
+              <span className="text-xs text-gray-500">{prompt.length} / 10,000</span>
+            </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-6">
-            让每个人都能写出
-            <br />
-            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              顶级 AI 提示词
-            </span>
-          </h1>
-          <p className="text-lg text-surface-400 max-w-2xl mx-auto mb-10">
-            PromptChef 帮你把模糊的想法变成精准的指令。智能分析、自动优化、多模型对比，让 AI 真正理解你的意图。
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup" className="btn-primary px-8 py-3 text-base">
-              免费开始使用
-            </Link>
-            <Link
-              href="#features"
-              className="btn-secondary px-8 py-3 text-base"
-            >
-              了解更多
-            </Link>
-          </div>
-        </section>
 
-        {/* Features */}
-        <section id="features" className="container-app pb-24">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className={`card hover:border-${f.color}-500/30 transition-colors`}
+          <div className="flex gap-3">
+            <button
+              onClick={handleOptimize}
+              disabled={isStreaming || !prompt.trim() || prompt.length > 10000}
+              className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isStreaming ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  优化中...
+                </span>
+              ) : '开始优化'}
+            </button>
+            {isStreaming && (
+              <button
+                onClick={() => { abortRef.current?.abort(); setIsStreaming(false) }}
+                className="px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-800 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
               >
-                <div
-                  className={`w-10 h-10 rounded-lg bg-${f.color}-500/20 flex items-center justify-center mb-5`}
-                >
-                  {f.icon}
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
-                <p className="text-sm text-surface-400 leading-relaxed">
-                  {f.description}
-                </p>
-              </div>
-            ))}
+                停止
+              </button>
+            )}
           </div>
-        </section>
-      </main>
 
-      {/* Footer */}
-      <footer className="border-t border-surface-800 py-8">
-        <div className="container-app flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-sm text-surface-500">
-            PromptChef &copy; {new Date().getFullYear()}
-          </span>
-          <div className="flex items-center gap-6 text-sm text-surface-500">
-            <span>隐私政策</span>
-            <span>服务条款</span>
-          </div>
+          {error && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
+
+          {(result || isStreaming) && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-300">优化结果</label>
+                {result && !isStreaming && (
+                  <button
+                    onClick={handleCopy}
+                    className="px-3 py-1 rounded-lg border border-gray-700 bg-gray-800 text-xs text-gray-300 hover:bg-gray-700 transition-colors"
+                  >
+                    {copied ? '已复制' : '复制结果'}
+                  </button>
+                )}
+              </div>
+              <div className="rounded-xl border border-gray-700 bg-gray-900 p-4 min-h-[200px] overflow-y-auto">
+                <pre className="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap font-sans">
+                  {result}
+                  {isStreaming && <span className="inline-block w-2 h-4 ml-0.5 bg-indigo-400 animate-pulse align-text-bottom" />}
+                </pre>
+              </div>
+              {stats && (
+                <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                  <span>{stats.tokens.toLocaleString()} tokens</span>
+                  <span>{(stats.latency / 1000).toFixed(1)}s</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      </footer>
+      </div>
     </div>
   )
 }
